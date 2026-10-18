@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>NWC Umpire Toolkit 2026/27</title>
+<style>
+:root{--ink:#1b2a3a;--blue:#1a4f7a;--line:#d6dde4;--bg:#f3f6f9;--ok:#e7f4ec;--okline:#2f8f58;--warn:#fdf1e0;--warnline:#c9741a;--bad:#fbe9e9;--badline:#b53a3a}
+*{box-sizing:border-box}
+body{font-family:Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink);margin:0;padding:16px}
+.wrap{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:8px;padding:24px}
+h1{font-size:1.5rem;margin:0 0 4px}
+.sub{color:#5b6b7b;margin:0 0 20px;font-size:.95rem}
+.step{margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-weight:bold;font-size:.9rem;margin-bottom:5px}
+select,input{width:100%;padding:10px;border:1px solid var(--line);border-radius:5px;font:inherit;background:#fff;color:var(--ink)}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+small{display:block;color:#5b6b7b;margin-top:4px;font-size:.8rem}
+button{padding:12px;background:var(--blue);color:#fff;border:0;border-radius:5px;font:inherit;font-weight:bold;cursor:pointer}
+button:hover{background:#133d5f}
+.go{width:100%;margin-top:18px}
+.add{background:#fff;color:var(--blue);border:1px solid var(--blue);padding:9px 14px;margin-top:4px}
+.add:hover{background:#eef2f6}
+.rm{background:#fff;color:var(--badline);border:1px solid var(--line);padding:9px}
+.rm:hover{background:var(--bad)}
+.row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;border:1px solid var(--line);border-radius:6px;padding:10px;background:#fafcfe}.row select,.row .rm{grid-column:1/-1}.hdr{display:none}.hdr{font-size:.78rem;font-weight:bold;color:#5b6b7b;margin-bottom:4px}.hdr span:last-child{display:block}
+.sm{width:auto;display:inline-block;margin-right:8px}.pnl{margin-top:10px}.dls input{padding:6px}
+@media print{body *{visibility:hidden}#out,#out *{visibility:visible}#out{position:absolute;left:0;top:0;width:100%}.noprint{display:none!important}}
+.more{margin-top:16px}.more summary{cursor:pointer;font-weight:bold;margin-bottom:12px}
+#out{margin-top:22px;display:none}
+.box{border-left:5px solid var(--okline);background:var(--ok);padding:12px 14px;border-radius:0 5px 5px 0;margin-bottom:14px}
+.box.warn{border-color:var(--warnline);background:var(--warn)}
+.box.bad{border-color:var(--badline);background:var(--bad)}
+.box h3{margin:0 0 6px;font-size:1.05rem}
+table{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:.92rem}
+td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{background:#eef2f6}
+.big{font-size:1.25rem;font-weight:bold}
+.fl{display:block;font-size:.85rem;font-weight:bold;margin-bottom:4px;line-height:1.25}.fl em{display:block;font-weight:normal;font-style:normal;color:#5b6b7b;font-size:.75rem}.rm .x{display:none}
+input[type=checkbox]{width:22px;height:22px;min-height:0;vertical-align:middle}
+@media(max-width:640px){
+ body{padding:8px;padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+ .wrap{padding:14px}h1{font-size:1.3rem}
+ select,input,button{font-size:16px;min-height:46px}
+ input[type=checkbox]{min-height:0}
+ .grid{grid-template-columns:1fr}
+ .hdr{display:none}
+ .row{grid-template-columns:1fr 1fr}
+ .row select,.row .rm{grid-column:1/-1}
+ .add,.go{width:100%}
+ .noprint button{width:100%;margin-bottom:8px}
+ table{display:block;overflow-x:auto}
+ .dls input{min-width:64px}
+ .box{padding:10px 12px}.big{font-size:1.1rem}
+ .more summary{padding:8px 0}
+}
+
+[hidden]{display:none!important}
+.tk-nav{max-width:760px;margin:0 auto 10px;display:flex;gap:8px;flex-wrap:wrap}
+.tk-nb{background:#fff;color:var(--blue);border:1px solid var(--blue);padding:8px 12px;min-height:40px;font-size:.9rem}
+.tk-nb:hover{background:#eef2f6}
+.tk-home{text-align:center}
+.tk-cards{display:grid;gap:14px;margin-top:22px}
+.tk-card{display:block;width:100%;text-align:left;background:#fff;color:var(--ink);border:2px solid var(--blue);border-radius:10px;padding:20px;font-weight:normal;cursor:pointer;min-height:0}
+.tk-card:hover{background:#eef6fc}
+.tk-card b{display:block;font-size:1.25rem;color:var(--blue);margin-bottom:6px}
+.tk-card span{font-size:.95rem;color:#425466}
+.tk-q{margin:4px 0 14px}
+.tk-g{border:1px solid var(--line);border-left-width:6px;border-radius:6px;margin-bottom:12px;background:#fff}
+.tk-g>summary{cursor:pointer;font-weight:bold;font-size:1.05rem;padding:12px 14px}
+.tk-g>summary small{display:inline;font-weight:normal;margin-left:6px}
+.tk-item{padding:4px 16px 14px;border-top:1px solid var(--line)}
+.tk-item h3{margin:12px 0 4px;font-size:1rem;color:var(--blue)}
+.tk-item ul{margin:4px 0 6px;padding-left:20px}.tk-item li{margin-bottom:4px}
+.tk-ref{color:#5b6b7b;font-size:.78rem}
+.tk-item .add{width:auto;margin-top:6px}
+@media(max-width:640px){.tk-nb{flex:1}.tk-item .add{width:100%}}
+</style>
+</head>
+<body>
+<nav id="tk-nav" class="tk-nav noprint" hidden><button class="tk-nb" onclick="go('home')">&larr; Home</button><button class="tk-nb" onclick="go('calc')">Overs calculator</button><button class="tk-nb" onclick="go('laws')">Clarity over Law</button></nav>
+<section id="view-home" class="view"><div class="wrap tk-home">
+<h1>NWC Umpire Toolkit</h1>
+<p class="sub">Summer Handbook 2026/27</p>
+<div class="tk-cards">
+ <button class="tk-card" onclick="go('calc')"><b>Overs lost calculator</b><span>Revised overs, intervals, fielding restrictions and finish times after one or more delays.</span></button>
+ <button class="tk-card" onclick="go('laws')"><b>Clarity over Law</b><span>The important playing conditions in plain English, grouped so they are quick to find.</span></button>
+</div>
+<small style="margin-top:20px">Quick-reference summaries. The Handbook, the umpires and the Club Referee have the final say.</small>
+</div></section>
+<section id="view-laws" class="view" hidden><div class="wrap">
+<h1>Clarity over Law</h1>
+<p class="sub">Key technical rules from the 2026/27 Handbook in plain English. Tap a heading to open it.</p>
+<input id="lawq" class="tk-q" type="search" placeholder="Search, for example drinks, free hit, late" aria-label="Search the rules" oninput="filterLaws()">
+<div id="lawlist"></div>
+<small>Clause numbers are shown so you can check the Handbook. Where the Handbook is unclear, ask the Chairman of Umpires or the Club Referee.</small>
+</div></section>
+<section id="view-calc" class="view" hidden><div class="wrap">
+<h1>NWC overs lost calculator</h1>
+<p class="sub">Based on the NWC Summer Handbook 2026/27 playing conditions. Handles several delays.</p>
+
+<div class="step">
+  <label for="fmt">1. Match format</label>
+  <select id="fmt" onchange="onFormat()">
+    <option value="50">50 overs (Premier / Promotion)</option>
+    <option value="50W">50 overs (Women)</option>
+    <option value="45">45 overs (Saturday 1st &amp; 2nd)</option>
+    <option value="40">40 overs (Sunday)</option>
+    <option value="T20">T20</option>
+  </select>
+</div>
+
+<div class="step">
+  <label for="start">2. Scheduled start time</label>
+  <input type="time" id="start" value="10:00">
+  <small>T20 sessions: 10:00, 14:00 or 18:00.</small>
+</div>
+
+<div class="step">
+  <label>3. Delays (add one row for each stoppage)</label>
+  <div class="row hdr"><span>When</span><span>Play stopped</span><span>Play resumed</span><span>Minutes lost</span><span>Overs bowled</span><span></span></div>
+  <div id="delays"></div>
+  <small>Enter the stop and restart times, or just the minutes. Overs bowled (for example 8.3) is used for fielding restrictions and the DLS sheet.</small>
+  <button class="add" onclick="addDelay()">Add another delay</button>
+</div>
+
+<details class="more">
+  <summary>More options</summary>
+  <div class="grid">
+    <div>
+      <label for="round">Fraction of an over</label>
+      <select id="round">
+        <option value="A">Round overs lost down</option>
+        <option value="B">Round overs lost up</option>
+      </select>
+      <small>Handbook wording is ambiguous; confirm with the Chairman of Umpires.</small>
+    </div>
+    <div>
+      <label for="intRed">Interval reduction (minutes)</label>
+      <input type="number" id="intRed" min="0" value="0">
+      <small id="intHint"></small>
+    </div>
+    <div>
+      <label for="extra">Extra time used (minutes)</label>
+      <input type="number" id="extra" min="0" value="0">
+      <small id="extraHint"></small>
+    </div>
+    <div>
+      <label for="early">Innings 1 finished early by (overs)</label>
+      <input type="number" id="early" min="0" step="1" value="0">
+      <small>Overs unused, for example 50 allotted and all out after 46.2 overs = 4 (round down). Clause 13.7.2.2.2.</small>
+    </div>
+  </div>
+</details>
+
+<details class="more">
+  <summary>Penalties: late arrival and slow over rate</summary>
+  <div class="grid">
+    <div><label for="late">Team arrived late by (minutes after scheduled start)</label><input type="number" id="late" min="0" value="0"></div>
+    <div><label>&nbsp;</label><button class="add" onclick="latePen()">Late arrival result</button></div>
+    <div><label for="pn">Overs the innings should have lasted</label><input type="number" id="pn" min="1" placeholder="e.g. 45"></div>
+    <div><label for="pc">Overs completed when the stipulated time ran out</label><input type="number" id="pc" min="0" placeholder="e.g. 43"></div>
+    <div><label><input type="checkbox" id="pout" class="sm">Batting team bowled out or result reached in time</label></div>
+    <div><button class="add" onclick="slowPen()">Slow over rate result</button></div>
+  </div>
+  <div id="pen" class="pnl"></div>
+</details>
+
+<button class="go" onclick="run()">Calculate</button>
+<div id="out"></div>
+</div></section>
+<script>
+/* dur = minutes from start to scheduled close. table = [min overs per side, interval minutes] (clause 11.1). */
+const FORMATS = {
+  "50": {base:50, maxBowl:10, dur:450, rate:14.28, std:30, minInt:20, table:null, extra:30, minOvers:20},
+  "50W":{base:50, maxBowl:10, dur:410, rate:15.79, std:30, minInt:20, table:null, extra:30, minOvers:20},
+  "45": {base:45, maxBowl:9, dur:440, rate:15, std:30, minInt:10, table:[[36,30],[26,25],[20,20]], extra:30, minOvers:20},
+  "40": {base:40, maxBowl:8, dur:360, rate:15, std:30, minInt:10, table:[[31,30],[26,25],[20,20]], extra:30, minOvers:20},
+  "T20":{base:20, maxBowl:4, dur:180, rate:15, std:20, minInt:10, table:null, extra:0, minOvers:5}
+};
+const PHASES = {before:"Before the match started", inn1:"During innings 1", inn2:"During innings 2"};
+const $ = id => document.getElementById(id);
+
+function tableInterval(f, n){
+  if(!f.table) return f.std;
+  for(const [min,i] of f.table) if(n >= min) return i;
+  return f.table[f.table.length-1][1];
+}
+function latestFinish(f, s){ return s + f.dur + f.extra; }
+function criticalStart(f, s){ return latestFinish(f, s) - 2 * f.minOvers * (60 / f.rate) - 10; }
+
+/* Same overs for both teams. lost = all minutes lost before innings 2 starts. Minutes from midnight. */
+function compute(fk, S, lost, rounding, intRed, extra){
+  const f = FORMATS[fk], mpo = 60 / f.rate, needed = 2 * f.base * mpo;
+  const revStart = S + lost, close = S + f.dur + extra;
+  const solve = I => {
+    const eff = Math.max(f.minInt, I - intRed);
+    const avail = close - revStart - eff;
+    let x = Math.max(0, needed - avail) * f.rate / 60;
+    if (x < 0.1) x = 0;
+    const lt = rounding === "A" ? Math.floor(x) : Math.ceil(x);
+    const per = rounding === "A" ? Math.floor(lt / 2) : Math.ceil(lt / 2);
+    return {n: Math.min(f.base, f.base - per), eff, avail, x};
+  };
+  const cands = f.table ? [...new Set(f.table.map(r => r[1]))] : [f.std];
+  let res = null, usedI = cands[0];
+  for (const I of cands) {
+    const r = solve(I);
+    if (!res) { res = r; usedI = I; }
+    if (tableInterval(f, r.n) === I) { res = r; usedI = I; break; }
+  }
+  Object.assign(res, {tableInterval: usedI, mpo, revStart, close, needed});
+  res.matchOn = res.n >= f.minOvers && res.avail > 0;
+  return res;
+}
+
+/* All delays together: before start (Lb), during innings 1 (L1), during innings 2 (L2). */
+function calc(fk, S, Lb, L1, L2, rounding, intRed, extra, early){
+  const f = FORMATS[fk], crit = criticalStart(f, S);
+  if (Lb > 0 && S + Lb > crit + 0.5) return {tooLate: true, crit, revStart: S + Lb};
+  const nB = compute(fk, S, Lb, rounding, 0, extra).n;       // overs after delays before the start
+  const r0 = compute(fk, S, Lb + L1, rounding, 0, extra);
+  intRed = Math.min(intRed, r0.tableInterval - f.minInt);
+  const r = compute(fk, S, Lb + L1, rounding, intRed, extra);  // overs after delays in innings 1
+  if (!r.matchOn) return {noMatch: true, why: "before"};
+  const n = r.n, eff = r.eff, mpo = r.mpo;
+  const effL2 = Math.max(0, L2 - early);                        // 13.7.2.2.2
+  const origEnd = S + Lb + L1 + 2 * n * mpo + eff;
+  const overrun = Math.max(0, origEnd + effL2 - r.close) - Math.max(0, origEnd - r.close); // only lateness caused by innings 2 delays
+  let x = overrun * f.rate / 60;
+  if (x < 0.1) x = 0;
+  const lost2 = Math.floor(x), n2 = n - lost2;                  // fraction ignored (13.7.2.2.1)
+  if (n2 < f.minOvers) return {noMatch: true, why: "inn2", n2};
+  const i1s = S + Lb, i1e = S + Lb + L1 + n * mpo - early, i2s = i1e + eff, i2e = i2s + n2 * mpo + L2;
+  return {f, n, nB, n2, lost2, x, eff, mpo, tableInterval: r.tableInterval, intRed, close: r.close,
+          crit, latest: latestFinish(f, S), i1s, i1e, i2s, i2e, avail: r.avail, needed: r.needed, x1: r.x};
+}
+
+function fmtT(m){ m = Math.round(m); return String(Math.floor(m/60) % 24).padStart(2,"0") + ":" + String(m % 60).padStart(2,"0"); }
+function parseT(s){ const [h,m] = s.split(":").map(Number); return h*60+m; }
+
+function addDelay(){
+  const d = document.createElement("div");
+  d.className = "row";
+  d.innerHTML = `<select class="dph" aria-label="When did the delay happen" onchange="rowPh(this)">${Object.entries(PHASES).map(([k,v]) => `<option value="${k}">${v}</option>`).join("")}</select>
+    <div><span class="fl">Play stopped</span><input class="dst" type="time" aria-label="Play stopped" oninput="rowMin(this)"></div>
+    <div><span class="fl">Play resumed</span><input class="dre" type="time" aria-label="Play resumed" oninput="rowMin(this)"></div>
+    <div><span class="fl">Minutes lost<em>fills in from the times</em></span><input class="dmin" type="number" inputmode="numeric" min="0" placeholder="e.g. 25" aria-label="Minutes lost"></div>
+    <div><span class="fl">Overs bowled<em>when play stopped, e.g. 8.3</em></span><input class="dov" type="text" inputmode="decimal" placeholder="not needed before the start" aria-label="Overs bowled when play stopped" disabled></div>
+    <button class="rm" title="Remove this delay" aria-label="Remove this delay" onclick="this.closest('.row').remove()"><span class="x">&times;</span><span class="rt">Remove this delay</span></button>`;
+  $("delays").appendChild(d);
+}
+function rowMin(el){
+  const r = el.closest(".row"), s = r.querySelector(".dst").value, e = r.querySelector(".dre").value;
+  if (s && e) r.querySelector(".dmin").value = (parseT(e) - parseT(s) + 1440) % 1440;
+}
+function rowPh(el){ el.closest(".row").querySelector(".dov").disabled = el.value === "before"; }
+
+/* ---------- Fielding restrictions (clauses 28.x). PPA = overs 20 to 37 rows, then the tail rows for 45/40 and for 50. ---------- */
+const PPA = "4,12,4;4,13,4;5,13,4;5,14,4;5,14,5;5,15,5;5,16,5;6,16,5;6,17,5;6,17,6;6,18,6;6,19,6;7,19,6;7,20,6;7,20,7;7,21,7;7,22,7;8,22,7".split(";");
+const PP45 = "8,22,8;8,23,8;9,23,8;9,23,9;9,24,9;10,24,9;10,24,10".split(";");
+const PP50 = "8,23,7;8,23,8;8,24,8;8,25,8;9,25,8;9,26,8;9,26,9;9,27,9;9,28,9;10,28,9;10,29,9;10,29,10".split(";");
+function phases(fk, n){
+  const f = FORMATS[fk];
+  if (fk === "T20") { const p = n >= 20 ? 6 : n >= 17 ? 5 : n >= 14 ? 4 : n >= 10 ? 3 : n >= 7 ? 2 : 1; return [["Fielding restriction overs", p, "2 outside"], ["Other overs", n - p, "no ring limit"]]; }
+  let t;
+  if (n >= f.base) t = fk === "45" ? [10,25,10] : fk === "40" ? [8,24,8] : [10,30,10];
+  else { const i = n - 20, tail = fk.startsWith("50") ? PP50 : PP45; t = (i < 18 ? PPA[i] : tail[i - 18]).split(",").map(Number); }
+  return [["Powerplay 1", t[0], "2 outside"], ["Powerplay 2", t[1], "4 outside"], ["Powerplay 3", t[2], "5 outside"]];
+}
+function parseOv(s){ const m = String(s || "").trim().match(/^(\d+)(?:\.(\d))?$/); return m ? +m[1] * 6 + (+m[2] || 0) : null; }
+function fmtB(b){ return Math.floor(b / 6) + "." + (b % 6); }
+function frText(fk, n, label){
+  const ph = phases(fk, n); let s = 0;
+  return `${label} (${n} overs): ` + ph.map(p => { const a = s + 1; s += p[1]; return p[1] ? `${p[0]} overs ${a} to ${s} (${p[2]})` : ""; }).filter(Boolean).join("; ");
+}
+function frResume(fk, n, ov, label){
+  const B = parseOv(ov); if (B === null) return "";
+  let end = 0;
+  for (const p of phases(fk, n)) { end += p[1]; if (B < end * 6) return `${label} stopped at ${ov} overs: on resumption ${p[0]} applies immediately for a further ${fmtB(end * 6 - B)} overs (clause 28, applies even mid-over).`; }
+  return `${label} stopped at ${ov} overs: the revised ${n} overs are already bowled, so the innings is complete.`;
+}
+function frLines(L){
+  const {fk, r, log} = L;
+  const out = [frText(fk, r.n, "Innings 1"), frText(fk, r.n2, "Innings 2")];
+  log.forEach(d => { if (d.ph === "inn1") out.push(frResume(fk, r.n, d.ov, "Innings 1")); if (d.ph === "inn2") out.push(frResume(fk, r.n2, d.ov, "Innings 2")); });
+  return out.filter(Boolean);
+}
+
+/* ---------- Penalties ---------- */
+function latePen(){
+  const late = Math.max(0, parseInt($("late").value) || 0);
+  if (late >= 90) { $("pen").innerHTML = `<div class="box bad"><h3>Late arrival (clause 2.6.2)</h3>A team that is 1 hour 30 minutes or more late for the scheduled or re-scheduled start automatically forfeits the match. Endorse the Club Return Sheets.</div>`; return; }
+  const lostOvers = Math.floor(Math.max(0, late - 30) / 4);   // 4 min per over (15 per hour), only after 30 min extra time
+  $("pen").innerHTML = `<div class="box warn"><h3>Late arrival (clause 2.6.2)</h3>A team arriving late without a valid reason forfeits the toss.${lostOvers ? ` It also loses ${lostOvers} over${lostOvers > 1 ? "s" : ""} in its innings (one over per 4 minutes, counted after the first 30 minutes of extra time).` : " No overs are lost yet: the deduction only starts after 30 minutes of extra time."} At least 9 players must be present at the start of play for the game to continue. Endorse the Club Return Sheets.</div>`;
+}
+function slowPen(){
+  const n = parseInt($("pn").value), c = parseInt($("pc").value);
+  if (!n || isNaN(c)) { $("pen").innerHTML = `<div class="box bad">Enter both the overs the innings should have lasted and the overs completed.</div>`; return; }
+  const short = $("pout").checked ? 0 : Math.max(0, n - c);
+  $("pen").innerHTML = short
+    ? `<div class="box warn"><h3>Slow over rate (clause 12.2.7)</h3>${short} over${short > 1 ? "s" : ""} short: penalty of ${5 * short} runs (5 per over), and the last ${short} over${short > 1 ? "s" : ""} must be bowled with an additional fielder inside the ring. Before applying it, check the time allowances in clause 12.2.3 (injuries, referrals, time wasting). The umpires may adjust the calculation with the Club Referee (12.2.6).</div>`
+    : `<div class="box">No sanction: the rate was met, or the batting team was bowled out or a result reached in time (clause 12.2.5 and 12.2.7).</div>`;
+}
+
+/* ---------- Summary, DLS sheet, copy ---------- */
+let LAST = null;
+function dlsBlock(log){
+  const rows = log.filter(d => d.ph !== "before");
+  if (!rows.length) return "";
+  return `<h3>DLS data sheet (for the Club Referee hotline)</h3>
+  <table class="dls"><tr><th>Stoppage</th><th>Stopped</th><th>Resumed</th><th>Overs bowled</th><th>Runs</th><th>Wickets</th></tr>
+  ${rows.map((d, i) => `<tr><td>${i + 1}. ${PHASES[d.ph]}</td><td>${d.st || ""}</td><td>${d.re || ""}</td><td>${d.ov || ""}</td><td><input class="dr" type="number" min="0" aria-label="Runs"></td><td><input class="dw" type="number" min="0" max="10" aria-label="Wickets"></td></tr>`).join("")}</table>
+  <small>Team 1 final score and wickets (if complete): <input id="t1s" type="number" min="0" class="sm" style="width:90px" aria-label="Team 1 score"> / <input id="t1w" type="number" min="0" max="10" class="sm" style="width:70px" aria-label="Team 1 wickets"></small>`;
+}
+function buildSummary(){
+  const {fk, S, r, sum, log, extra} = LAST, f = FORMATS[fk];
+  const L = [`NWC match summary (Summer Handbook 2026/27)`, `Format: ${$("fmt").selectedOptions[0].text}`, `Scheduled start: ${fmtT(S)}`,
+    `Time lost: ${sum.before} min before the start, ${sum.inn1} min in innings 1, ${sum.inn2} min in innings 2`,
+    `Revised overs: team 1 ${r.n}, team 2 ${r.n2} (original ${f.base})`,
+    `Innings 1: ${fmtT(r.i1s)} to ${fmtT(r.i1e)}`, `Interval: ${r.eff} min, ${fmtT(r.i1e)} to ${fmtT(r.i2s)}`, `Innings 2: ${fmtT(r.i2s)} to ${fmtT(r.i2e)}`,
+    `Scheduled close ${fmtT(S + f.dur)}${extra ? ", extra time used " + extra + " min" : ""}; latest finish ${fmtT(r.latest)}`,
+    `Maximum overs per bowler: team 1 bowling ${r.n2 < f.base ? Math.ceil(r.n2 / 5) : f.maxBowl}, team 2 bowling ${r.n < f.base ? Math.ceil(r.n / 5) : f.maxBowl}`, ...frLines(LAST)];
+  if (log.length) { L.push("Stoppages:"); log.forEach((d, i) => L.push(`${i + 1}. ${PHASES[d.ph]}: ${d.st || "?"} to ${d.re || "?"} (${d.mins} min)${d.ov ? ", " + d.ov + " overs bowled" : ""}`)); }
+  const runs = [...document.querySelectorAll(".dr")], wk = [...document.querySelectorAll(".dw")];
+  runs.forEach((x, i) => { if (x.value || wk[i].value) L.push(`DLS stoppage ${i + 1}: ${x.value || "?"} runs, ${wk[i].value || "?"} wickets`); });
+  if ($("t1s") && $("t1s").value) L.push(`Team 1 final: ${$("t1s").value}/${$("t1w").value || "?"}`);
+  L.push("Revised target: to be set by the umpires with the Club Referee (DLS).");
+  return L.join("\n");
+}
+function copySummary(){
+  const t = buildSummary(), ok = () => { $("cpmsg").textContent = "Copied"; };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, () => fb(t));
+  else fb(t);
+  function fb(x){ const a = document.createElement("textarea"); a.value = x; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch (e) { $("cpmsg").textContent = "Copy failed"; } a.remove(); }
+}
+
+function onFormat(){
+  const f = FORMATS[$("fmt").value];
+  $("intHint").textContent = `Minimum interval after reduction: ${f.minInt} min.`;
+  $("extraHint").textContent = f.extra ? `Maximum ${f.extra} min, only if the umpires allow it.` : "No extra time in T20.";
+  $("extra").max = f.extra;
+  if (!f.extra) $("extra").value = 0;
+}
+
+const DLS = `<div class="box warn"><h3>Revised target</h3>When overs are cut after the match has started, the target is set with the Duckworth/Lewis/Stern method (clause 16.4.1.1). The umpires calculate it and confirm it with the Club Referee on the hotline (clause 2.6.3). This page does not calculate it.</div>`;
+
+function run(){
+  const fk = $("fmt").value, f = FORMATS[fk], out = $("out");
+  if (!$("start").value) { alert("Enter the scheduled start time."); return; }
+  const S = parseT($("start").value);
+  const sum = {before:0, inn1:0, inn2:0};
+  const log = [];
+  document.querySelectorAll("#delays .row").forEach(r => {
+    const ph = r.querySelector(".dph").value, m = Math.max(0, parseInt(r.querySelector(".dmin").value) || 0);
+    sum[ph] += m;
+    if (m) log.push({ph, mins: m, st: r.querySelector(".dst").value, re: r.querySelector(".dre").value, ov: ph === "before" ? "" : r.querySelector(".dov").value.trim()});
+  });
+  const extra = Math.min(f.extra, Math.max(0, parseInt($("extra").value) || 0));
+  const intRed = Math.max(0, parseInt($("intRed").value) || 0);
+  const early = Math.max(0, parseInt($("early").value) || 0);   // overs
+  const earlyMin = early * (60 / f.rate);                        // minutes
+  const r = calc(fk, S, sum.before, sum.inn1, sum.inn2, $("round").value, intRed, extra, earlyMin);
+  out.style.display = "block";
+  setTimeout(() => out.scrollIntoView({behavior: "smooth", block: "start"}), 60);
+
+  if (r.tooLate) { out.innerHTML = `<div class="box bad"><h3>Too late to start</h3>The revised start ${fmtT(r.revStart)} is after the latest start of ${fmtT(r.crit)}. The match is abandoned unless the umpires and Club Referee decide otherwise.</div>`; return; }
+  if (r.noMatch) { out.innerHTML = `<div class="box bad"><h3>${r.why === "inn2" ? "No result likely" : "No match possible"}</h3>${r.why === "inn2" ? "Team 2 would get fewer than " + f.minOvers + " overs" : "Fewer than " + f.minOvers + " overs per side are available"} (clauses 13.7.2.2.3 and 16.1.3). The umpires decide with the Club Referee.</div>`; return; }
+
+  const total = sum.before + sum.inn1 + sum.inn2;
+  const cut = r.n < f.base || r.lost2 > 0;
+  const maxB = n => n < f.base ? Math.ceil(n / 5) + " overs (one fifth, clause 13.8)" : f.maxBowl + " overs (format maximum)";
+  let html = `<div class="box"><h3>Revised overs</h3>
+    <div class="big">Team 1: ${r.n} overs &nbsp; Team 2: ${r.n2} overs</div>
+    ${total} min lost in total. Rate used: ${f.rate} overs per hour (${r.mpo.toFixed(2)} min per over).</div>`;
+
+  html += `<table><tr><th>Step</th><th>Minutes lost</th><th>Overs per side after this step</th></tr>
+    <tr><td>${PHASES.before}</td><td>${sum.before}</td><td>${r.nB}</td></tr>
+    <tr><td>${PHASES.inn1}</td><td>${sum.inn1}</td><td>${r.n}</td></tr>
+    <tr><td>${PHASES.inn2} (team 2 only)</td><td>${sum.inn2}${early ? ` (${early} overs early = ${Math.round(earlyMin)} min counted off)` : ""}</td><td>${r.n2}</td></tr></table>`;
+
+  html += `<table><tr><th>Item</th><th>Value</th></tr>
+    <tr><td>Interval</td><td>${r.eff} min (standard for ${r.n} overs: ${r.tableInterval} min${r.intRed ? `, reduced by ${r.intRed}` : ""})</td></tr>
+    <tr><td>Scheduled close of play</td><td>${fmtT(S + f.dur)}${extra ? ` (+${extra} min extra time = ${fmtT(r.close)})` : ""}</td></tr>
+    <tr><td>Latest finish (full extra time)</td><td>${fmtT(r.latest)}</td></tr>
+    <tr><td>Latest start (critical time)</td><td>${fmtT(r.crit)}${fk === "45" || fk === "40" ? " (handbook clause 12.2)" : " (calculated with the same method, not in the handbook)"}</td></tr>
+    <tr><td>Maximum overs per bowler, team 1 bowling (team 2's overs)</td><td>${maxB(r.n2)}</td></tr>
+    <tr><td>Maximum overs per bowler, team 2 bowling (team 1's overs)</td><td>${maxB(r.n)}</td></tr></table>`;
+
+  html += `<div class="box"><h3>Schedule</h3>
+    <strong>Innings 1</strong> (${r.n} overs): ${fmtT(r.i1s)} to ${fmtT(r.i1e)}<br><br>
+    <strong>Interval</strong> (${r.eff} min): ${fmtT(r.i1e)} to ${fmtT(r.i2s)}<br><br>
+    <strong>Innings 2</strong> (${r.n2} overs): ${fmtT(r.i2s)} to ${fmtT(r.i2e)}<br><br>
+    ${f.base === 20 ? "No drinks breaks in T20." : "Drinks are already included in the over rate. The umpires re-space them after each delay."}</div>`;
+
+  if (r.i2e - r.latest > 0.5) html += `<div class="box bad"><h3>Past the latest finish</h3>The calculated finish (${fmtT(r.i2e)}) is later than ${fmtT(r.latest)}, even with full extra time. Play continues until the overs are bowled or a result is reached, or the umpires decide otherwise.</div>`;
+  else if (r.i2e - r.close > 0.5) html += `<div class="box warn"><h3>Check close of play</h3>The calculated finish (${fmtT(r.i2e)}) is later than the scheduled close including the extra time used (${fmtT(r.close)}).</div>`;
+  if ((sum.inn1 > 0 && r.n < r.nB) || r.lost2 > 0) html += DLS;
+  if (fk === "40") html += `<div class="box warn">40-over interval: the clause table gives 30 min but the hours-of-play table shows 40 min. This tool uses the clause table.</div>`;
+  if (fk === "45" && total > 0) html += `<div class="box warn">45-over hours of play (10:00 to 17:20) contain about 50 spare minutes, so short delays may cost no overs.</div>`;
+  LAST = {fk, S, r, sum, log, extra};
+  html += `<h3>Fielding restrictions</h3><ul>${frLines(LAST).map(x => `<li>${x}</li>`).join("")}</ul>`;
+  if (log.length) html += `<h3>Stoppage log</h3><table><tr><th>#</th><th>When</th><th>Stopped</th><th>Resumed</th><th>Minutes</th></tr>${log.map((d, i) => `<tr><td>${i + 1}</td><td>${PHASES[d.ph]}</td><td>${d.st || ""}</td><td>${d.re || ""}</td><td>${d.mins}</td></tr>`).join("")}</table>`;
+  html += dlsBlock(log);
+  out.innerHTML = html + `<div class="noprint"><button class="add" onclick="copySummary()">Copy summary</button> <button class="add" onclick="window.print()">Print</button> <span id="cpmsg"></span></div><small>Final decisions rest with the umpires and Club Referee. Check the time allowances in clause 12.2.3 before applying over-rate penalties.</small>`;
+}
+onFormat();
+addDelay();
+</script>
+<script>
+const LAWS = [
+{g:"Before play", c:"#2b6cb0", items:[
+ {t:"The toss", p:["Captains, in full playing clothes and with a written team sheet, toss on the field with the umpires watching.","Time: no earlier than 30 minutes and no later than 15 minutes before the scheduled start.","The winner's decision to bat or field is final once it is notified."], r:"13.4, 13.5"},
+ {t:"Late arrival", p:["A team that arrives late without a valid reason forfeits the toss.","It also loses 1 over per 4 minutes late, but only after the first 30 minutes of extra time.","At least 9 players must be present at the start.","1 hour 30 minutes late or more: the match is forfeited. Endorse the Club Return Sheets."], r:"2.6.2, 13.4"},
+ {t:"Protective gear", p:["Full-faced helmets are compulsory for batters.","Only Type A bats may be used.","Fielding helmets not in use go on the ground behind the wicketkeeper. If the ball hits one while in play: 5 penalty runs.","A batter may change other protective gear (for example gloves) only at a wicket or an interval, unless it is damaged or unserviceable and the umpires approve."], r:"2.5, 5.1, 28.3.2"},
+ {t:"The ball", p:["Each fielding team has one new ball for its innings.","If the ball is lost or unfit, the umpires replace it with one of similar wear and tell the batters and the fielding captain."], r:"4.3, 4.4"}]},
+{g:"Quick facts by format", c:"#718096", items:[
+ {t:"Times and limits", tb:{h:["Format","Rate for revised overs","Max overs per bowler","Close of play (10:00 start)","Extra time","Interval"], rows:[
+  ["50-over","14.28 an hour","10","17:30","30 min","30 min (minimum 20)"],
+  ["50-over Women","15.79 an hour","10","16:50","30 min","30 min (minimum 20)"],
+  ["45-over","15 an hour","9","17:20","30 min","30, 25 or 20 min by overs"],
+  ["40-over","15 an hour","8","16:00","30 min","30 min (hours table shows 40)"],
+  ["T20","15 an hour","4","13:00, 17:00 or 21:00","None","20 min (minimum 10)"]]}, r:"11, 12, 13"}]},
+{g:"Time, weather and safety", c:"#2f8f58", items:[
+ {t:"Fitness for play", p:["Only the umpires, together, decide if conditions are dangerous or unreasonable.","Not ideal is not enough. Wet grass or a wet ball alone is not a reason to stop.","Dangerous means actual and foreseeable risk to a player or umpire. Unreasonable means no safety risk, but it would not be sensible to play.","If the ground is so wet or slippery that bowlers have no foothold, fielders cannot move freely or batters cannot play or run, it counts as dangerous and unreasonable.","Consult the Club Referee and the Club Cricket Committee before suspending. Ignore shadows from permanent objects. Light meters and artificial lights do not apply."], r:"2.2, 2.3"},
+ {t:"Threats and lightning", p:["Safety of everyone in the ground comes first. If there is a threat (weather, pitch invasion and so on), suspend play and move everyone to a safe place.","Follow the Lightning Policy (Annexure B).","The umpires check conditions as often as needed, without players or officials, and restart as soon as it is safe.","After a threat, abandoning or resuming is the umpires' decision, after speaking to the head of ground security and the police."], r:"2.3.2, 2.3.7 to 2.3.9"},
+ {t:"Over rates", p:["Minimum 14.28 overs an hour (Women 15.79). The umpires work out the rate at the end of each innings.","Time allowances: treatment by medical staff on the field, a player leaving for a serious injury, third umpire referrals, time wasting by the batting side, and anything else outside the fielding side's control.","Penalty for a short rate: 5 runs for each over not completed, and an extra fielder inside the ring for each over short.","No penalty if the batting side is bowled out or a result is reached in time."], r:"12.2", link:["Penalty check in the calculator","calc"]},
+ {t:"Drinks", p:["50-over: two drinks breaks per session, 1 hour 10 minutes apart (Women 1 hour 5 minutes).","45-over: two per session, 1 hour apart. 40-over: one 5-minute break after over 20. T20: none.","A batter may ask for water after 30 minutes of continuous batting, then every 30 minutes, with the umpire's consent and without wasting time. Each team provides its own drinks."], r:"2.2, 11.2, 11.3, 11.5"},
+ {t:"Disputes and scores", p:["Where there is any disagreement or dispute, the umpires together make the final decision.","Umpires must satisfy themselves about the runs, wickets and overs bowled, and stay in contact with the scorers."], r:"2.5, 2.6 (Laws)"}]},
+{g:"Delayed and shortened matches", c:"#c9741a", items:[
+ {t:"Revised overs", p:["Minimum 20 overs each (5 in T20). Fewer means No Result.","If innings 1 is affected, both teams get the same revised overs, worked out from the playing time left.","If innings 2 is affected, only team 2's overs are cut, at the over rate for the time lost, and the fraction of an over is ignored.","The over rate already includes drinks, so drinks time is not counted separately."], r:"13.7.2, 16.1.3", link:["Open the overs lost calculator","calc"]},
+ {t:"Revised target (DLS)", p:["Once the match has started and overs are cut, the target is set with Duckworth/Lewis/Stern. It is always a whole number, and one run less is a tie.","The umpires set it with the Club Referee on the hotline.","If innings 2 cannot continue after at least 20 overs have been bowled, the result is decided by the DLS par score at the moment play stopped: level is a tie, otherwise a win or loss by the margin."], r:"16.4, 2.6.3"},
+ {t:"Extra time and latest finish", p:["Up to 30 minutes of extra time at the end of the day if the start is delayed or play is suspended (not in T20).","At the interval, extra time can be added if a captain asks and the umpires think it would help get a result (up to 30 minutes in 50-over, 15 in 45-over).","Latest start (critical time): 45-over 15:00, 40-over 13:40."], r:"11.2.4, 11.4.6, 12.2, 13.7"}]},
+{g:"Bowling", c:"#805ad5", items:[
+ {t:"Overs per bowler", p:["Uninterrupted innings: 10 overs (50-over), 9 (45), 8 (40), 4 (T20).","If overs are reduced, no bowler may bowl more than one fifth of the total overs. When it does not divide evenly, one extra over is allowed."], r:"13.8, 13.3"},
+ {t:"Short-pitched bowling", p:["Maximum two fast short-pitched deliveries an over. That is a ball above shoulder height of the striker standing upright at the crease.","The bowler's end umpire tells the bowler and the striker each time one is bowled.","A ball above head height that the striker cannot hit with a normal stroke is a wide.","Dangerous bowling: no ball, then a caution. A second instance gives a final warning. A third means the bowler is suspended for the innings."], r:"41.1"},
+ {t:"Wides", p:["Judge strictly and consistently, to stop negative bowling wide of the wicket.","A ball is wide if it is out of reach of a normal cricket stroke, or above head height of the striker standing upright at the crease."], r:"22.1"},
+ {t:"Free hit", p:["Every no ball (all kinds) is followed by a free hit.","If the free hit is itself a no ball or wide, the next delivery is also a free hit.","The striker can only be out in ways that apply to a no ball, even if the free hit is called wide.","No field changes, unless there is a new striker or the no ball was a fielding restriction breach (then only to fix the breach).","Signal: the no ball signal, then one arm straight up moved in a circle."], r:"21.3"},
+ {t:"Throw before the delivery stride", p:["If the bowler throws the ball at the striker's end before the delivery stride, it is a dead ball, not a no ball, and no free hit follows."], r:"21.4"}]},
+{g:"Fielding", c:"#b53a3a", items:[
+ {t:"Leg side and behind the crease", p:["No more than 5 fielders on the leg side at the instant of delivery.","No more than 2 fielders, other than the wicketkeeper, behind the popping crease on the on side.","Breach: the striker's end umpire calls no ball."], r:"28.2"},
+ {t:"Powerplays", p:["The ring is 30 yards (27.5 m). Women: 25.15 yards (23 m).","50-over: overs 1 to 10 (2 outside), 11 to 40 (4 outside), 41 to 50 (5 outside).","45-over: overs 1 to 10, 11 to 35, 36 to 45. 40-over: overs 1 to 8, 9 to 32, 33 to 40.","T20: first 6 overs, 2 outside.","When overs are cut, the phases shrink by a table and the new Powerplay takes effect at once, even mid-over. The calculator shows the new phases.","The umpire signals each new phase to the scorers by rotating an arm in a large circle, and the scoreboard shows the current Powerplay.","Breach: no ball, called by the square leg umpire."], r:"28.5, 28.1", link:["Open the overs lost calculator","calc"]},
+ {t:"Substitute fielders", p:["Allowed for an injury or illness that happened during the match, or any other wholly acceptable reason.","A substitute may not bowl or captain. He or she may keep wicket only with the umpires' consent.","Squad members who are not playing must wear a team training bib on the playing area."], r:"24.1"},
+ {t:"A fielder off the field", p:["Tell an umpire the reason. The fielder may only return with the umpire's consent.","Absent for more than 8 minutes: he or she cannot bowl until the same amount of playing time has been served, up to 120 minutes (Women 110).","He or she also cannot bat until the innings has run for the unserved time, but may bat at once once five wickets have fallen.","Stoppage time counts as time served if the fielder returns on resumption (or the side is batting) and had told an umpire."], r:"24.2"}]},
+{g:"Results and points", c:"#319795", items:[
+ {t:"Points", p:["Win with bonus 5, win without bonus 4, tie 3, no result 2, loss 0.","Bonus point: a run rate at least 1.25 times the opposition's.","Level on points: most wins, then wins over the other tied teams, then most bonus points, then net run rate."], r:"16.10"},
+ {t:"Winning hit and tie", p:["The match ends the moment a result is reached. Nothing after that counts, except penalty runs.","A boundary scored before the winning runs are completed counts in full.","Runs completed before a catch is completed (or obstructed) do not count towards the winning total.","Tie: scores level after both innings. With DLS, one run less than the target is a tie."], r:"16.3, 16.5"},
+ {t:"Refusal to play", p:["If an action may be a refusal to play, the umpires tell the Club Referee.","If the captain persists, the Club Referee awards the match to the other side."], r:"16.2"}]}
+];
+
+function renderLaws(){
+  const root = document.getElementById("lawlist");
+  LAWS.forEach(g => {
+    const d = document.createElement("details"); d.className = "tk-g"; d.style.borderLeftColor = g.c;
+    const s = document.createElement("summary"); s.textContent = g.g;
+    const n = document.createElement("small"); n.textContent = "(" + g.items.length + ")"; s.appendChild(n); d.appendChild(s);
+    g.items.forEach(it => {
+      const w = document.createElement("div"); w.className = "tk-item";
+      const h = document.createElement("h3"); h.textContent = it.t; w.appendChild(h);
+      if (it.p) { const ul = document.createElement("ul"); it.p.forEach(x => { const li = document.createElement("li"); li.textContent = x; ul.appendChild(li); }); w.appendChild(ul); }
+      if (it.tb) {
+        const box = document.createElement("div"); box.style.overflowX = "auto";
+        const tb = document.createElement("table");
+        const tr = document.createElement("tr"); it.tb.h.forEach(x => { const th = document.createElement("th"); th.textContent = x; tr.appendChild(th); }); tb.appendChild(tr);
+        it.tb.rows.forEach(r => { const row = document.createElement("tr"); r.forEach(x => { const td = document.createElement("td"); td.textContent = x; row.appendChild(td); }); tb.appendChild(row); });
+        box.appendChild(tb); w.appendChild(box);
+      }
+      const rf = document.createElement("div"); rf.className = "tk-ref"; rf.textContent = "Handbook clause " + it.r; w.appendChild(rf);
+      if (it.link) { const b = document.createElement("button"); b.className = "add"; b.textContent = it.link[0]; b.onclick = () => go(it.link[1]); w.appendChild(b); }
+      w._text = (it.t + " " + (it.p || []).join(" ") + " " + (it.tb ? it.tb.rows.join(" ") : "")).toLowerCase();
+      d.appendChild(w);
+    });
+    root.appendChild(d);
+  });
+}
+function filterLaws(){
+  const q = document.getElementById("lawq").value.trim().toLowerCase();
+  document.querySelectorAll("#lawlist .tk-g").forEach(g => {
+    let any = false;
+    g.querySelectorAll(".tk-item").forEach(w => { const m = !q || w._text.includes(q); w.hidden = !m; if (m) any = true; });
+    g.hidden = !any; g.open = !!q && any;
+  });
+}
+const VIEWS = ["home", "calc", "laws"];
+function show(v){
+  if (!VIEWS.includes(v)) v = "home";
+  VIEWS.forEach(x => document.getElementById("view-" + x).hidden = x !== v);
+  document.getElementById("tk-nav").hidden = v === "home";
+  window.scrollTo(0, 0);
+}
+function go(v){ if (location.hash !== "#" + v) location.hash = v; show(v); }
+window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+renderLaws();
+show(location.hash.slice(1));
+</script>
+</body>
+</html>
